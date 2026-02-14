@@ -19,4 +19,11 @@ RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
     /etc/apache2/sites-available/000-default.conf
 
+# 🔥 CAMBIAR APACHE A PUERTO 8080
+RUN sed -i 's/80/8080/g' /etc/apache2/ports.conf
+RUN sed -i 's/:80/:8080/g' /etc/apache2/sites-available/000-default.conf
+
+# Exponer puerto 8080
+EXPOSE 8080
+
 WORKDIR /var/www/html

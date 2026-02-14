@@ -1,10 +1,12 @@
 # ---------- Build Stage ----------
-FROM composer:2 AS vendor
+FROM composer:2.7 AS vendor
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 WORKDIR /app
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-req=php
+
 
 # ---------- Final App Stage ----------
 FROM php:8.2-apache

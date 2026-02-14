@@ -2,31 +2,32 @@
 FROM composer:2 AS vendor
 
 WORKDIR /app
+
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# ---------- App Stage ----------
+# ---------- Final App Stage ----------
 FROM php:8.2-apache
 
-# Instalar dependencias del sistema
+# Dependencias del sistema
 RUN apt-get update && apt-get install -y \
-    libsqlite3-dev \
-    sqlite3 \
     unzip \
     git \
+    libsqlite3-dev \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensiones necesarias
+# Extensiones de PHP
 RUN docker-php-ext-install pdo pdo_sqlite
 
 # Habilitar mod_rewrite
 RUN a2enmod rewrite
 
-# Cambiar Apache a puerto 8080 (Cloud Run)
+# Cambiar Apache para escuchar en 8080
 RUN sed -i 's/80/8080/g' /etc/apache2/ports.conf
 RUN sed -i 's/:80/:8080/g' /etc/apache2/sites-available/000-default.conf
 
-# Configurar DocumentRoot
+# Configurar DocumentRoot a public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/sites-available/000-default.conf \
@@ -34,10 +35,10 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
 
 WORKDIR /var/www/html
 
-# Copiar proyecto completo
+# Copiar código
 COPY . .
 
-# Copiar vendor desde la etapa anterior
+# Copiar vendor desde el stage de build
 COPY --from=vendor /app/vendor ./vendor
 
 # Permisos

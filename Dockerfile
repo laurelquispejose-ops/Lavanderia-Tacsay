@@ -36,4 +36,5 @@ COPY --from=vendor /app/vendor ./vendor
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 8080
+CMD ["apache2-foreground"]
 
